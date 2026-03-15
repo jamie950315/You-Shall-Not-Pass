@@ -11,7 +11,7 @@
 
 ```bash
 sudo python3 crack_parallels.py
-open Question1.app
+open Parallels Desktop.app
 ```
 
 ## Architecture
@@ -185,7 +185,7 @@ macOS requires `com.apple.security.hypervisor` to call `hv_vm_create()`. Without
 |------|---------|
 | `crack_parallels.py` | One-command solution (`sudo python3 crack_parallels.py`) |
 | `CTF_WRITEUP.md` | This writeup |
-| `Question1.app/` | Target app bundle |
+| `Parallels Desktop.app/` | Target app bundle |
 
 ---
 

@@ -12,7 +12,7 @@ CTF competition challenge: reverse engineer and bypass the license verification 
 
 - `crack_parallels.py` — One-command solution: `sudo python3 crack_parallels.py`
 - `CTF_WRITEUP.md` — Full writeup with all 15 defense layers documented
-- `Question1.app/` — Target app bundle (Parallels Desktop)
+- `Parallels Desktop.app/` — Target app bundle (Parallels Desktop)
 
 ## Architecture (What You Need to Know)
 
@@ -76,14 +76,14 @@ All binaries are Universal (ARM64 + x86_64). The script parses fat headers and a
 ## How to Re-apply (if needed)
 
 ```bash
-# From a clean Question1.app:
+# From a clean Parallels Desktop.app:
 sudo python3 crack_parallels.py
 
 # Verify only (no sudo needed):
 python3 crack_parallels.py --dry-run
 
 # If app won't launch after codesign issues:
-sudo chown -R $(whoami) Question1.app
+sudo chown -R $(whoami) Parallels Desktop.app
 sudo python3 crack_parallels.py
 ```
 

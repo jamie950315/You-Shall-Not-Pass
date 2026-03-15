@@ -390,7 +390,7 @@ def codesign_all(app):
 def main():
     parser = argparse.ArgumentParser(
         description="Parallels Desktop 26.2.2 License Bypass")
-    parser.add_argument("--target", help="Path to Question1.app")
+    parser.add_argument("--target", help="Path to Parallels Desktop.app")
     parser.add_argument("--dry-run", action="store_true", help="Verify only")
     args = parser.parse_args()
 
@@ -403,12 +403,12 @@ def main():
         app = args.target
     else:
         for c in [os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               "Question1.app"), "Question1.app"]:
+                               "Parallels Desktop.app"), "Parallels Desktop.app"]:
             if os.path.isdir(c):
                 app = c
                 break
         else:
-            print("[ERROR] Cannot find Question1.app")
+            print("[ERROR] Cannot find Parallels Desktop.app")
             sys.exit(1)
 
     real_user = os.environ.get("SUDO_USER", os.environ.get("USER", "jamie"))
