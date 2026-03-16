@@ -490,6 +490,58 @@ with open('<binary>','rb') as f:
 
 ---
 
+## Known Limitation: VM Networking (vmnet)
+
+### The Problem
+
+VMs start and run successfully but have **no network connectivity**. The error `PRL_NET_PRLNET_OPEN_FAILED` ("網路初始化失敗") appears in logs (suppressed from UI by our `showMessage→ret` patch).
+
+### Root Cause
+
+Parallels uses Apple's `vmnet` framework (`ApplevisorNet` wrapper) for VM networking on Apple Silicon. This requires the `com.apple.vm.networking` entitlement, which **cannot be used with ad-hoc signing** — AMFI sends SIGKILL (status 9), same as `com.apple.security.cs.disable-library-validation`.
+
+The error chain:
+```
+prl_vm_app → vmnet_start_interface()
+  → macOS checks entitlement → missing com.apple.vm.networking
+    → callback returns error 1001
+      → "Sending warning PRL_NET_PRLNET_OPEN_FAILED"
+        → VM runs without network
+```
+
+### Why It Can't Be Fixed with Binary Patching
+
+The `com.apple.security.hypervisor` entitlement is the **only** restricted entitlement that works with ad-hoc signing on Apple Silicon. Apple specifically allowed this for open-source hypervisors (QEMU, etc.). The `com.apple.vm.networking` entitlement was NOT given the same exception — it requires an Apple-approved provisioning profile tied to a real Developer ID.
+
+### What We Tried
+
+| Attempt | Result |
+|---------|--------|
+| Add `com.apple.vm.networking` to entitlements | AMFI SIGKILL — VM won't start at all |
+| AMFIExemption kext (osy/GitHub) | Requires OpenCore bootloader — Apple Silicon real Mac can't use it |
+| `amfi_get_out_of_my_way=1` boot-arg | Requires SIP disabled + reboot — disables all AMFI security |
+| Patch vmnet_start_interface error handling | Suppresses warning but doesn't give actual network |
+
+### How Other VM Software Handles This
+
+| Software | Without entitlement | Mechanism |
+|----------|-------------------|-----------|
+| **UTM (App Store)** | Has entitlement | Apple-approved Developer ID + provisioning profile |
+| **UTM (GitHub/self-built)** | Falls back to **Emulated VLAN** (slirp) | QEMU built-in userspace TCP/IP stack — no entitlement needed |
+| **QEMU (Homebrew)** | No vmnet networking (same as us) | Ad-hoc signed, can't get entitlement |
+| **VMware Fusion** | Has entitlement | Apple-approved Developer ID |
+| **Parallels (official)** | Has entitlement | Apple-approved Developer ID |
+
+**Key insight:** UTM/QEMU have a **slirp userspace networking fallback** that operates entirely in userspace without any macOS entitlements. Parallels has **no such fallback** on Apple Silicon — it's vmnet-only (`ApplevisorNet`).
+
+### Current State
+
+- VM runs normally without network (this is acceptable for the CTF)
+- The `PRL_NET_PRLNET_OPEN_FAILED` dialog is suppressed by `CMessageProcessor::showMessage→ret`
+- Error is logged in `/Library/Logs/parallels.log` and `~/Parallels/<VM>.pvm/parallels.log`
+
+---
+
 ## Version Info
 
 ```

@@ -134,6 +134,14 @@ macOS requires `com.apple.security.hypervisor` to call `hv_vm_create()`. Without
 - `embedded.provisionprofile` binds entitlements to original Developer ID
 - Dispatcher runs as root → `sudo pkill -9` required to restart
 
+## Known Limitation: No VM Network
+
+VMs run without network connectivity. Parallels uses Apple's `vmnet` framework (`ApplevisorNet`) which requires `com.apple.vm.networking` entitlement. Unlike `com.apple.security.hypervisor`, this entitlement **causes AMFI SIGKILL with ad-hoc signing** — Apple only granted the hypervisor exception for open-source VM tools, not the networking one.
+
+Other VM software (UTM/QEMU) works around this with a userspace TCP/IP stack (slirp/Emulated VLAN). Parallels has no such fallback on Apple Silicon.
+
+The `PRL_NET_PRLNET_OPEN_FAILED` error dialog is suppressed by our `CMessageProcessor::showMessage→ret` patch.
+
 ## Patch Summary
 
 | # | Binary | Arch | Offset | Original → Patch | Description |
