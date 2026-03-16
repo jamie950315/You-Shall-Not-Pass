@@ -31,7 +31,7 @@ libPrlXmlModel.1.dylib        ← Layer 14: isTrial() data model
 Hypervisor.framework           ← Layer 15: macOS entitlement
 ```
 
-## The 15 Defense Layers
+## The Defense Layers
 
 ### Layer 1: JLIC Cryptographic Signature
 
@@ -111,7 +111,7 @@ Data model function at offset `0xB4` in the license object. Returns trial flag f
 
 **Patch:** `ldr; cmp; cset; ret` → `mov w0,#0; ret` at `0x7B19B4`
 
-### Layer 16: Hypervisor.framework Entitlement
+### Hypervisor.framework Entitlement (not a patch — code signing)
 
 macOS requires `com.apple.security.hypervisor` to call `hv_vm_create()`. Without it: `HV_DENIED (0xfae94007)`.
 
